@@ -28,13 +28,12 @@ public class LanguageController {
 
     @PutMapping
     public ApiResponse updateLanguage(@RequestBody Language language){
-        return LanguageService.updateLanguage(language);
+        return languageService.updateLanguage(language);
     }
 
     @DeleteMapping
     public ApiResponse deleteLanguage(@RequestBody Language language) {
         return languageService.deleteLanguage(language.getLanguageId());
     }
-
 
 }
