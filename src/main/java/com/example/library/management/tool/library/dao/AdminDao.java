@@ -40,9 +40,10 @@ public class AdminDao {
     }
 
     public ApiResponse addAdmin(Admin admin) {
-        String addAdminQuery = "INSERT INTO admin (admin_user_id, admin_username, admin_password) VALUES (?, ? , ?);";
+
+        String addAdminQuery = "INSERT INTO \"admin\" (admin_username, admin_password) VALUES (?, ?);";
         try {
-            int affectedAdminData = jdbcTemplate.update(addAdminQuery , admin.getAdminUserId(),admin.getAdminUsername(),admin.getAdminPassword());
+            int affectedAdminData = jdbcTemplate.update(addAdminQuery, admin.getAdminUsername(), admin.getAdminPassword());
             if (affectedAdminData > 0) {
                 return new ApiResponse(true, "Admin created successfully.");
             }else {
@@ -54,9 +55,16 @@ public class AdminDao {
     }
 
     public ApiResponse updateAdmin(Admin admin) {
-        String updateAdminQuery = "UPDATE admin SET admin_user_id = ?, admin_username = ? WHERE admin_password = ?";
+        String updateAdminQuery = """
+                UPDATE "admin"
+                SET admin_username = COALESCE(?, admin_username),
+                    admin_password = COALESCE(?, admin_password)
+                WHERE admin_user_id = ?;""";
         try {
-            int affectedAdminData = jdbcTemplate.update(updateAdminQuery, admin.getAdminUserId(),admin.getAdminUsername(),admin.getAdminPassword());
+            int affectedAdminData = jdbcTemplate.update(updateAdminQuery,
+                    admin.getAdminUsername(),
+                    admin.getAdminPassword(),
+                    admin.getAdminUserId());
             if(affectedAdminData > 0) {
                 return new ApiResponse(true, "Admin data updated successfully.");
             }else{
@@ -68,9 +76,9 @@ public class AdminDao {
     }
 
     public ApiResponse deleteAdmin(int adminId) {
-        String deleteAdminQuery = "DELETE FROM admin WHERE admin_user_id = ?;";
+        String deleteAdminQuery = "DELETE FROM \"admin\" WHERE admin_user_id = ?;";
         try {
-            int affectedAdminData = jdbcTemplate.update(deleteAdminQuery,adminId);
+            int affectedAdminData = jdbcTemplate.update(deleteAdminQuery, adminId);
             if(affectedAdminData > 0) {
                 return new ApiResponse(true, "Admin with id number: " + adminId + " deleted successfully.");
             } else {

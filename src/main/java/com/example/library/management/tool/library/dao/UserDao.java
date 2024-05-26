@@ -59,7 +59,12 @@ public class UserDao {
     }
 
     public ApiResponse updateUser(User user) {
-        String updateUserQuery = "UPDATE \"user\" SET user_name = ?, user_email = ?, user_phone = ? WHERE user_id = ?;";
+        String updateUserQuery = """
+                UPDATE "user"
+                SET user_name = COALESCE(?, user_name),
+                    user_email = COALESCE(?, user_email),
+                    user_phone = COALESCE(?, user_phone)
+                WHERE user_id = ?;""";
         try {
             int rowsAffected = jdbcTemplate.update(updateUserQuery, user.getUserName(), user.getUserEmail(), user.getUserPhone(), user.getUserId());
             if (rowsAffected > 0) {

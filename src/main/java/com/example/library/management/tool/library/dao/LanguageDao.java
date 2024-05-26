@@ -1,6 +1,5 @@
 package com.example.library.management.tool.library.dao;
 
-import com.example.library.management.tool.library.dto.genre.Genre;
 import com.example.library.management.tool.library.dto.language.Language;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,7 @@ public class LanguageDao {
     private JdbcTemplate jdbcTemplate;
 
     public List<Language> getAllLanguages() {
-        String getAllLanguageQuery = "SELECT * FROM language;";
+        String getAllLanguageQuery = "SELECT * FROM \"language\";";
         return jdbcTemplate.query(getAllLanguageQuery, new LanguageDao.LanguageRowMapper());
     }
 
@@ -34,7 +33,7 @@ public class LanguageDao {
     }
 
     public ApiResponse addLanguage(String languageName) {
-        String addLanguageQuery = "INSERT INTO language (language_name) VALUES (?);";
+        String addLanguageQuery = "INSERT INTO \"language\" (language_name) VALUES (?);";
         try {
             int rowsAffected = jdbcTemplate.update(addLanguageQuery, languageName);
             if (rowsAffected > 0) {
@@ -48,7 +47,7 @@ public class LanguageDao {
     }
 
     public ApiResponse updateLanguage(Language language) {
-        String updateLanguageQuery = "UPDATE language SET language_name = ? WHERE language_id = ?;";
+        String updateLanguageQuery = "UPDATE \"language\" SET language_name = ? WHERE language_id = ?;";
         try {
             int rowsAffected = jdbcTemplate.update(updateLanguageQuery, language.getLanguageName(), language.getLanguageId());
             if (rowsAffected > 0) {
@@ -62,7 +61,7 @@ public class LanguageDao {
     }
 
     public ApiResponse deleteLanguage(int languageId) {
-        String deleteLanguageQuery = "DELETE FROM language WHERE language_id = ?;";
+        String deleteLanguageQuery = "DELETE FROM \"language\" WHERE language_id = ?;";
         try {
             int rowsAffected = jdbcTemplate.update(deleteLanguageQuery, languageId);
             if (rowsAffected > 0) {
