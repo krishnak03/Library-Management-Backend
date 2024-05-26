@@ -31,7 +31,7 @@ public class AdminController {
     }
 
     @DeleteMapping
-    public ApiResponse deleteAdmin(@RequestBody int adminId) {
-        return adminService.deleteAdmin(adminId);
+    public ApiResponse deleteAdmin(@RequestBody Admin admin) {
+        return adminService.deleteAdmin(admin.getAdminUserId());
     }
 }
