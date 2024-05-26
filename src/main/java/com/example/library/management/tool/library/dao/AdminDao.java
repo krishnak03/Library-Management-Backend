@@ -46,7 +46,7 @@ public class AdminDao {
             int affectedAdminData = jdbcTemplate.update(addAdminQuery, admin.getAdminUsername(), admin.getAdminPassword());
             if (affectedAdminData > 0) {
                 return new ApiResponse(true, "Admin created successfully.");
-            }else {
+            } else {
                 return new ApiResponse(false, "Error occurred while creating new Admin.");
             }
         } catch (Exception e) {
@@ -65,9 +65,9 @@ public class AdminDao {
                     admin.getAdminUsername(),
                     admin.getAdminPassword(),
                     admin.getAdminUserId());
-            if(affectedAdminData > 0) {
+            if (affectedAdminData > 0) {
                 return new ApiResponse(true, "Admin data updated successfully.");
-            }else{
+            } else{
                 return new ApiResponse(false, "Error occurred while updating Admin.");
             }
         } catch (Exception e) {
@@ -79,13 +79,37 @@ public class AdminDao {
         String deleteAdminQuery = "DELETE FROM \"admin\" WHERE admin_user_id = ?;";
         try {
             int affectedAdminData = jdbcTemplate.update(deleteAdminQuery, adminId);
-            if(affectedAdminData > 0) {
+            if (affectedAdminData > 0) {
                 return new ApiResponse(true, "Admin with id number: " + adminId + " deleted successfully.");
             } else {
                 return new ApiResponse(false, "Error occurred while deleting Admin of id number: " + adminId);
             }
         } catch (Exception e) {
             return new ApiResponse(false, "Exception occurred while deleting Admin. " + e.getMessage());
+        }
+    }
+
+    public ApiResponse loginAdmin(String adminUsername, String adminPassword) {
+        String loginAdminQuery = """
+            SELECT CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM "admin"
+                    WHERE admin_username = ? AND admin_password = ?
+                )
+                THEN true
+                ELSE false
+            END;
+        """;
+        try {
+            Boolean loginSuccessful = jdbcTemplate.queryForObject(loginAdminQuery, Boolean.class, adminUsername, adminPassword);
+            if (loginSuccessful != null && loginSuccessful) {
+                return new ApiResponse(true, "Login successful.");
+            } else {
+                return new ApiResponse(false, "Login failed.");
+            }
+        } catch (Exception e) {
+            return new ApiResponse(false, "Exception occurred while logging in Admin. " + e.getMessage());
         }
     }
 }

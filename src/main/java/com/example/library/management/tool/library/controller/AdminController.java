@@ -34,4 +34,11 @@ public class AdminController {
     public ApiResponse deleteAdmin(@RequestBody Admin admin) {
         return adminService.deleteAdmin(admin.getAdminUserId());
     }
+
+    @GetMapping(path = "/login")
+    public ApiResponse loginAdmin(
+            @RequestParam(value = "admin_username") String adminUsername,
+            @RequestParam(value = "admin_password") String adminPassword) {
+        return adminService.loginAdmin(adminUsername, adminPassword);
+    }
 }
