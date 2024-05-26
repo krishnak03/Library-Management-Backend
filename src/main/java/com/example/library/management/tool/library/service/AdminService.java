@@ -41,4 +41,11 @@ public class AdminService {
         }
         return adminDao.deleteAdmin(adminId);
     }
+
+    public ApiResponse loginAdmin(String adminUsername, String adminPassword) {
+        if (Validator.isEmptyOrNull(adminUsername) || Validator.isEmptyOrNull(adminPassword)) {
+            return new ApiResponse(false, "Admin username and admin password shouldn't be null to login.");
+        }
+        return adminDao.loginAdmin(adminUsername, adminPassword);
+    }
 }
