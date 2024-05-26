@@ -37,6 +37,11 @@ public class BorrowService {
                 Validator.isEmptyOrNull(borrow.getIssueDate())) {
             return new ApiResponse(false, "UserId, BookId and Issue Date shouldn't be empty or null.");
         }
+        int fine = calculateFine(borrow);
+        if(fine > 0){
+            //to do - pending
+            System.out.println(fine);
+        }
         return borrowDao.updateBorrow(borrow);
     }
 
@@ -65,6 +70,17 @@ public class BorrowService {
         } else {
             System.out.println("Unable to Calculate number of days book was borrowed");
             return -1;
+        }
+    }
+
+    public int calculateFine(Borrow borrow) {
+        long daysBorrowed  = calculateDateDifference(borrow);
+
+        if (daysBorrowed <= 7) {
+            return 0;
+        } else {
+            long overdueDays = daysBorrowed - 7;
+            return (int) (5 * Math.ceil(overdueDays / 7.0));
         }
     }
 

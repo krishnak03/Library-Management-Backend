@@ -51,7 +51,10 @@ public class BorrowDao {
     public ApiResponse addBorrow(Borrow borrow) {
         String addBorrowQuery = "INSERT INTO borrow (user_id, book_id, issue_date) VALUES (?, ?, ?);";
         try {
-            int affectedBorrowData = jdbcTemplate.update(addBorrowQuery, borrow.getUserId(), borrow.getBookId(), borrow.getIssueDate());
+            int affectedBorrowData = jdbcTemplate.update(addBorrowQuery,
+                    borrow.getUserId(),
+                    borrow.getBookId(),
+                    borrow.getIssueDate());
             if (affectedBorrowData > 0) {
                 return new ApiResponse(true, "Borrowed book successfully.");
             } else {
