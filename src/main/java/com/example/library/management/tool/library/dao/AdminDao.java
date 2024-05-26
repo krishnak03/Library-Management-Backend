@@ -2,6 +2,7 @@ package com.example.library.management.tool.library.dao;
 
 import com.example.library.management.tool.library.dto.admin.Admin;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
+import com.example.library.management.tool.library.exceptions.CustomLibraryException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -32,7 +33,11 @@ public class AdminDao {
     public List<Admin> getAllAdmins() {
         String getAllAdminsQuery = "SELECT * FROM \"admin\";";
         try {
-            return jdbcTemplate.query(getAllAdminsQuery, new AdminRowMapper());
+            List<Admin> admins = jdbcTemplate.query(getAllAdminsQuery, new AdminRowMapper());
+            if (admins.isEmpty()) {
+                throw new CustomLibraryException("No Admins found.", 500);
+            }
+            return admins;
         } catch (Exception e) {
             System.out.println("Exception occurred while retrieving all Admins" + e.getMessage());
             return Collections.emptyList();

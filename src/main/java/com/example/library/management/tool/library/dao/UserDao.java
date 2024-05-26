@@ -2,6 +2,7 @@ package com.example.library.management.tool.library.dao;
 
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
 import com.example.library.management.tool.library.dto.user.User;
+import com.example.library.management.tool.library.exceptions.CustomLibraryException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -21,7 +22,11 @@ public class UserDao {
     public List<User> getAllUsers() {
         String getAllUsersQuery = "SELECT * FROM \"user\";";
         try {
-            return jdbcTemplate.query(getAllUsersQuery, new UserRowMapper());
+            List<User> users = jdbcTemplate.query(getAllUsersQuery, new UserRowMapper());
+            if (users.isEmpty()) {
+                throw new CustomLibraryException("No users found.", 500);
+            }
+            return users;
         } catch (Exception e) {
             System.out.println("Error retrieving users: " + e.getMessage());
             return Collections.emptyList();

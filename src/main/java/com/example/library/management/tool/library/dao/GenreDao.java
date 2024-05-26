@@ -2,6 +2,7 @@ package com.example.library.management.tool.library.dao;
 
 import com.example.library.management.tool.library.dto.genre.Genre;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
+import com.example.library.management.tool.library.exceptions.CustomLibraryException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -21,7 +22,11 @@ public class GenreDao {
     public List<Genre> getAllGenres() {
         String getAllGenresQuery = "SELECT * FROM genre;";
         try {
-            return jdbcTemplate.query(getAllGenresQuery, new GenreRowMapper());
+            List<Genre> genres = jdbcTemplate.query(getAllGenresQuery, new GenreRowMapper());
+            if (genres.isEmpty()) {
+                throw new CustomLibraryException("No Genres found.", 500);
+            }
+            return genres;
         } catch (Exception e) {
             System.out.println("Error retrieving genres: " + e.getMessage());
             return Collections.emptyList();
