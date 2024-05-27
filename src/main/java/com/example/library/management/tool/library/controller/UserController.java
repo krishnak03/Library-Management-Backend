@@ -1,23 +1,21 @@
 package com.example.library.management.tool.library.controller;
 
-import com.example.library.management.tool.library.dto.genre.Genre;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
 import com.example.library.management.tool.library.dto.user.User;
 import com.example.library.management.tool.library.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping(path = "/user")
+@RequestMapping(path = "/users")
 public class UserController {
 
     @Autowired
     public UserService userService;
 
     @GetMapping
-    public List<User> getUser() {
+    public ResponseEntity<?> getAllUsers() {
         return userService.getAllUsers();
     }
 

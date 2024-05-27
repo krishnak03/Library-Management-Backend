@@ -7,7 +7,7 @@ import lombok.Data;
 public class Book {
 
     @JsonProperty("book_id")
-    private int bookId;
+    private Integer bookId;
     @JsonProperty("book_name")
     private String bookName;
     @JsonProperty("book_author")

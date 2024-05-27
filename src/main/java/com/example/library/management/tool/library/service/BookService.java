@@ -3,9 +3,11 @@ package com.example.library.management.tool.library.service;
 
 import com.example.library.management.tool.library.dao.BookDao;
 import com.example.library.management.tool.library.dto.book.Book;
+import com.example.library.management.tool.library.dto.book.BookSearchRequest;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
-import com.example.library.management.tool.library.util.Validator;
+import com.example.library.management.tool.library.util.ValidatorUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,43 +18,44 @@ public class BookService {
     @Autowired
     public BookDao bookDao;
 
-    public List<Book> getAllBooks() {
+    public ResponseEntity<?> getAllBooks() {
         return bookDao.getAllBooks();
     }
 
     public ApiResponse addBook(Book book) {
-        if (Validator.isEmptyOrNull(book.getBookName())) {
-            return new ApiResponse(false, "Book name shouldn't be empty or null.");
+        if (ValidatorUtil.isEmptyOrNull(book.getBookName()) ||
+                ValidatorUtil.isEmptyOrNull(book.getBookAuthor()) ||
+                ValidatorUtil.isEmptyOrNull(book.getBookGenre()) ||
+                ValidatorUtil.isEmptyOrNull(book.getBookLang())) {
+            return new ApiResponse(false
+                    , "Book name, Book author, Book genre and Book language shouldn't be empty or null.");
         }
-        if (Validator.isEmptyOrNull(book.getBookAuthor())) {
-            return new ApiResponse(false, "Book author shouldn't be empty or null.");
-        }
-        if (Validator.isEmptyOrNull(book.getBookGenre())) {
-            return new ApiResponse(false, "Book genre shouldn't be empty or null.");
-        }
-        if (Validator.isEmptyOrNull(book.getBookLang())) {
-            return new ApiResponse(false, "Book language shouldn't be empty or null.");
-        }
+
         return bookDao.addBook(book);
     }
 
     public ApiResponse updateBook(Book book) {
-        if (book.getBookId() <= 0) {
-            return new ApiResponse(false, "Invalid book ID.");
+        if (book.getBookId() == null ) {
+            return new ApiResponse(false, "Book id shouldn't be null.");
         }
-        if (Validator.isEmptyOrNull(book.getBookName()) && Validator.isEmptyOrNull(book.getBookAuthor()) &&
-                Validator.isEmptyOrNull(book.getBookGenre()) && Validator.isEmptyOrNull(book.getBookLang())) {
+        if (ValidatorUtil.isEmptyOrNull(book.getBookName()) &&
+                ValidatorUtil.isEmptyOrNull(book.getBookAuthor()) &&
+                ValidatorUtil.isEmptyOrNull(book.getBookGenre()) &&
+                ValidatorUtil.isEmptyOrNull(book.getBookLang())) {
             return new ApiResponse(false, "No valid update information provided.");
         }
         return bookDao.updateBook(book);
     }
 
-    public ApiResponse deleteBook(int bookId) {
-        if (bookId <= 0) {
-            return new ApiResponse(false, "Invalid book ID provided.");
+    public ApiResponse deleteBook(Integer bookId) {
+        if (bookId == null ) {
+            return new ApiResponse(false, "Book id shouldn't be null.");
         }
         return bookDao.deleteBook(bookId);
     }
 
+    public ResponseEntity<?> searchBooks(BookSearchRequest bookSearchRequest) {
+        return bookDao.searchBooks(bookSearchRequest);
+    }
 
 }

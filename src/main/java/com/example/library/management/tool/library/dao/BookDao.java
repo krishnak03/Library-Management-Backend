@@ -1,17 +1,21 @@
 package com.example.library.management.tool.library.dao;
 
 import com.example.library.management.tool.library.dto.book.Book;
-import com.example.library.management.tool.library.dto.genre.Genre;
+import com.example.library.management.tool.library.dto.book.BookSearchRequest;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
+import com.example.library.management.tool.library.util.ValidatorUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -21,17 +25,7 @@ public class BookDao {
     private JdbcTemplate jdbcTemplate;
 
 
-    public List<Book> getAllBooks() {
-        String getAllBooksQuery = "SELECT * FROM book;";
-        try {
-            return jdbcTemplate.query(getAllBooksQuery, new BookRowMapper());
-        } catch (Exception e) {
-            System.out.println("Error retrieving books: " + e.getMessage());
-            return Collections.emptyList();
-        }
-    }
-
-    public class BookRowMapper implements RowMapper<Book> {
+    private static final class BookRowMapper implements RowMapper<Book> {
         @Override
         public Book mapRow(ResultSet rs, int rowNum) throws SQLException {
             Book book = new Book();
@@ -48,30 +42,53 @@ public class BookDao {
         }
     }
 
-    private int ensureGenreExists(String genreName) {
+    public ResponseEntity<?> getAllBooks() {
+        String getAllBooksQuery = "SELECT * FROM book;";
         try {
-            Integer genreId = jdbcTemplate.queryForObject("SELECT genre_id FROM genre WHERE genre_name = ?", new Object[]{genreName}, Integer.class);
-            return genreId;
-        } catch (EmptyResultDataAccessException e) {
-            jdbcTemplate.update("INSERT INTO genre (genre_name) VALUES (?)", genreName);
-            return jdbcTemplate.queryForObject("SELECT genre_id FROM genre WHERE genre_name = ?", new Object[]{genreName}, Integer.class);
+            List<Book> books = jdbcTemplate.query(getAllBooksQuery, new BookRowMapper());
+            if (books.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(false, "No Books found."), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse(false, "Error retrieving books: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private int ensureLanguageExists(String languageName) {
+    public boolean genreExists(String genreName) {
         try {
-            Integer languageId = jdbcTemplate.queryForObject("SELECT language_id FROM language WHERE language_name = ?", new Object[]{languageName}, Integer.class);
-            return languageId;
-        } catch (EmptyResultDataAccessException e) {
-            jdbcTemplate.update("INSERT INTO language (language_name) VALUES (?)", languageName);
-            return jdbcTemplate.queryForObject("SELECT language_id FROM language WHERE language_name = ?", new Object[]{languageName}, Integer.class);
+            Integer count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM genre WHERE genre_name = ?",
+                    new Object[]{genreName},
+                    Integer.class
+            );
+            return count != null && count > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean languageExists(String languageName) {
+        try {
+            Integer count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM language WHERE language_name = ?",
+                    new Object[]{languageName},
+                    Integer.class
+            );
+            return count != null && count > 0;
+        } catch (Exception e) {
+            return false;
         }
     }
 
     public ApiResponse addBook(Book book) {
 
-        int genreId = ensureGenreExists(book.getBookGenre());
-        int languageId = ensureLanguageExists(book.getBookLang());
+        boolean genreExists = genreExists(book.getBookGenre());
+        boolean languageExists = languageExists(book.getBookLang());
+
+        if (!genreExists || !languageExists) {
+            return new ApiResponse(false, "Genre or Language not present in System.");
+        }
 
         String insertQuery = "INSERT INTO book (book_name, book_author, book_genre, book_lang, book_shelf_id, book_quantity, book_available, book_popularity) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
@@ -83,7 +100,7 @@ public class BookDao {
                     book.getBookLang(),
                     book.getBookShelfId(),
                     book.getBookQuantity(),
-                    book.getBookAvailable(),
+                    book.getBookQuantity(),
                     book.getBookPopularity());
             if (rowsAffected > 0) {
                 return new ApiResponse(true, "Book added successfully.");
@@ -139,6 +156,79 @@ public class BookDao {
             }
         } catch (Exception e) {
             return new ApiResponse(false, "Error deleting book: " + e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> searchBooks(BookSearchRequest bookSearchRequest) {
+        String phrase = bookSearchRequest.getPhrase();
+        String genre = bookSearchRequest.getGenre();
+        String language = bookSearchRequest.getLanguage();
+
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM book WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+
+        if (phrase != null && !phrase.isEmpty()) {
+            queryBuilder.append("AND (similarity(book_name, ?) > 0.3 OR similarity(book_author, ?) > 0.3) ");
+            params.add(phrase);
+            params.add(phrase);
+        }
+        if (genre != null && !genre.isEmpty()) {
+            queryBuilder.append("AND book_genre = ? ");
+            params.add(genre);
+        }
+        if (language != null && !language.isEmpty()) {
+            queryBuilder.append("AND book_lang = ? ");
+            params.add(language);
+        }
+
+        queryBuilder.append("ORDER BY book_popularity DESC, GREATEST(similarity(book_name, ?), similarity(book_author, ?)) DESC");
+        if (phrase != null && !phrase.isEmpty()) {
+            params.add(phrase);
+            params.add(phrase);
+        }
+
+        String query = queryBuilder.toString();
+
+        try {
+            List<Book> books = jdbcTemplate.query(query, params.toArray(), new BookRowMapper());
+
+            if (books.isEmpty()) {
+                // If no results found with the phrase and both genre and language are null/empty, return no books found
+                if ((genre == null || genre.isEmpty()) && (language == null || language.isEmpty())) {
+                    return new ResponseEntity<>(new ApiResponse(false, "No books found."), HttpStatus.OK);
+                }
+
+                // If no results found with the phrase, return books filtered by genre and/or language
+                queryBuilder = new StringBuilder("SELECT * FROM book WHERE 1=1 ");
+                params.clear();
+
+                if (genre != null && !genre.isEmpty()) {
+                    queryBuilder.append("AND book_genre = ? ");
+                    params.add(genre);
+                }
+                if (language != null && !language.isEmpty()) {
+                    queryBuilder.append("AND book_lang = ? ");
+                    params.add(language);
+                }
+
+                if (params.isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "No books found."), HttpStatus.OK);
+                }
+
+                queryBuilder.append("ORDER BY book_popularity DESC");
+
+                String fallbackQuery = queryBuilder.toString();
+
+                books = jdbcTemplate.query(fallbackQuery, params.toArray(), new BookRowMapper());
+
+                if (books.isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "No books found."), HttpStatus.OK);
+                }
+            }
+
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse(false, "Error occurred while searching for books: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

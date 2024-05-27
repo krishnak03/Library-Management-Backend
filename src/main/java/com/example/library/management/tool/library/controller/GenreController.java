@@ -5,6 +5,7 @@ import com.example.library.management.tool.library.dto.genre.Genre;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
 import com.example.library.management.tool.library.service.GenreService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +18,7 @@ public class GenreController {
     public GenreService genreService;
 
     @GetMapping
-    public List<Genre> getAllGenres() {
-
+    public ResponseEntity<?> getAllGenres() {
         return genreService.getAllGenres();
     }
 

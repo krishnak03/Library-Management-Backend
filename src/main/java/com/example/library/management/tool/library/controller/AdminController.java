@@ -4,6 +4,7 @@ import com.example.library.management.tool.library.dto.admin.Admin;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
 import com.example.library.management.tool.library.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class AdminController {
     public AdminService adminService;
 
     @GetMapping
-    public List<Admin> getAllAdmins() {
+    public ResponseEntity<?> getAllAdmins() {
         return adminService.getAllAdmins();
     }
 
