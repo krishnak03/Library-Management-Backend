@@ -2,6 +2,7 @@ package com.example.library.management.tool.library.dao;
 
 import com.example.library.management.tool.library.dto.language.Language;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
+import com.example.library.management.tool.library.exceptions.CustomLibraryException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
@@ -19,7 +21,16 @@ public class LanguageDao {
 
     public List<Language> getAllLanguages() {
         String getAllLanguageQuery = "SELECT * FROM \"language\";";
-        return jdbcTemplate.query(getAllLanguageQuery, new LanguageDao.LanguageRowMapper());
+        try {
+            List<Language> languages = jdbcTemplate.query(getAllLanguageQuery, new LanguageDao.LanguageRowMapper());
+            if (languages.isEmpty()) {
+                throw new CustomLibraryException("No languages found.", 500);
+            }
+            return languages;
+        } catch (Exception e) {
+            System.out.println("Exception occurred while retrieving all languages" + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     private static final class LanguageRowMapper implements RowMapper<Language> {
