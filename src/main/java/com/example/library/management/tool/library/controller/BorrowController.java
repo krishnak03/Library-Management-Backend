@@ -3,8 +3,11 @@ package com.example.library.management.tool.library.controller;
 import com.example.library.management.tool.library.dto.admin.Admin;
 import com.example.library.management.tool.library.dto.borrow.Borrow;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
+import com.example.library.management.tool.library.exceptions.CustomLibraryException;
 import com.example.library.management.tool.library.service.BorrowService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +21,7 @@ public class BorrowController {
     private BorrowService borrowService;
 
     @GetMapping
-    public List<Borrow> getAllBorrows() {
+    public ResponseEntity<?> getAllBorrows() {
         return borrowService.getAllBorrows();
     }
 

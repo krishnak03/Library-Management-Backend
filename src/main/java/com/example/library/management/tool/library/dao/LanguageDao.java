@@ -4,6 +4,8 @@ import com.example.library.management.tool.library.dto.language.Language;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
 import com.example.library.management.tool.library.exceptions.CustomLibraryException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -19,20 +21,6 @@ public class LanguageDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public List<Language> getAllLanguages() {
-        String getAllLanguageQuery = "SELECT * FROM \"language\";";
-        try {
-            List<Language> languages = jdbcTemplate.query(getAllLanguageQuery, new LanguageDao.LanguageRowMapper());
-            if (languages.isEmpty()) {
-                throw new CustomLibraryException("No languages found.", 500);
-            }
-            return languages;
-        } catch (Exception e) {
-            System.out.println("Exception occurred while retrieving all languages" + e.getMessage());
-            return Collections.emptyList();
-        }
-    }
-
     private static final class LanguageRowMapper implements RowMapper<Language> {
         @Override
         public Language mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -40,6 +28,19 @@ public class LanguageDao {
             language.setLanguageId(rs.getInt("language_id"));
             language.setLanguageName(rs.getString("language_name"));
             return language;
+        }
+    }
+
+    public ResponseEntity<?> getAllLanguages() {
+        String getAllLanguageQuery = "SELECT * FROM \"language\";";
+        try {
+            List<Language> languages = jdbcTemplate.query(getAllLanguageQuery, new LanguageRowMapper());
+            if (languages.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(false, "No languages found."), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(languages, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse(false, "Exception occurred while retrieving all languages: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

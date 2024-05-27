@@ -4,6 +4,8 @@ import com.example.library.management.tool.library.dto.admin.Admin;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
 import com.example.library.management.tool.library.exceptions.CustomLibraryException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -21,26 +23,25 @@ public class AdminDao {
 
     private static final class AdminRowMapper implements RowMapper<Admin> {
         @Override
-        public Admin mapRow(ResultSet resultSet , int rowNo) throws SQLException {
+        public Admin mapRow(ResultSet rs, int rowNum) throws SQLException {
             Admin admin = new Admin();
-            admin.setAdminUserId(resultSet.getInt("admin_user_id"));
-            admin.setAdminUsername(resultSet.getString("admin_username"));
-            admin.setAdminPassword(resultSet.getString("admin_password"));
+            admin.setAdminUserId(rs.getInt("admin_user_id"));
+            admin.setAdminUsername(rs.getString("admin_username"));
+            admin.setAdminPassword(rs.getString("admin_password"));
             return admin;
         }
     }
 
-    public List<Admin> getAllAdmins() {
+    public ResponseEntity<?> getAllAdmins() {
         String getAllAdminsQuery = "SELECT * FROM \"admin\";";
         try {
             List<Admin> admins = jdbcTemplate.query(getAllAdminsQuery, new AdminRowMapper());
             if (admins.isEmpty()) {
-                throw new CustomLibraryException("No Admins found.", 500);
+                return new ResponseEntity<>(new ApiResponse(false, "No Admins found."), HttpStatus.OK);
             }
-            return admins;
+            return new ResponseEntity<>(admins, HttpStatus.OK);
         } catch (Exception e) {
-            System.out.println("Exception occurred while retrieving all Admins" + e.getMessage());
-            return Collections.emptyList();
+            return new ResponseEntity<>(new ApiResponse(false, "Exception occurred while retrieving all Admins: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

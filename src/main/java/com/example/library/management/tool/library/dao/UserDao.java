@@ -4,6 +4,8 @@ import com.example.library.management.tool.library.dto.standardresponse.ApiRespo
 import com.example.library.management.tool.library.dto.user.User;
 import com.example.library.management.tool.library.exceptions.CustomLibraryException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -19,20 +21,6 @@ public class UserDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public List<User> getAllUsers() {
-        String getAllUsersQuery = "SELECT * FROM \"user\";";
-        try {
-            List<User> users = jdbcTemplate.query(getAllUsersQuery, new UserRowMapper());
-            if (users.isEmpty()) {
-                throw new CustomLibraryException("No users found.", 500);
-            }
-            return users;
-        } catch (Exception e) {
-            System.out.println("Error retrieving users: " + e.getMessage());
-            return Collections.emptyList();
-        }
-    }
-
     private static final class UserRowMapper implements RowMapper<User> {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -42,6 +30,19 @@ public class UserDao {
             user.setUserEmail(rs.getString("user_email"));
             user.setUserPhone(rs.getString("user_phone"));
             return user;
+        }
+    }
+
+    public ResponseEntity<?> getAllUsers() {
+        String getAllUsersQuery = "SELECT * FROM \"user\";";
+        try {
+            List<User> users = jdbcTemplate.query(getAllUsersQuery, new UserRowMapper());
+            if (users.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(false, "No users found."), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(users, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse(false, "Error retrieving users: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

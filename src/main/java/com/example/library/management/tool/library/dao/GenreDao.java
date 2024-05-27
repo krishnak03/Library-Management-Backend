@@ -4,6 +4,8 @@ import com.example.library.management.tool.library.dto.genre.Genre;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
 import com.example.library.management.tool.library.exceptions.CustomLibraryException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -19,20 +21,6 @@ public class GenreDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public List<Genre> getAllGenres() {
-        String getAllGenresQuery = "SELECT * FROM genre;";
-        try {
-            List<Genre> genres = jdbcTemplate.query(getAllGenresQuery, new GenreRowMapper());
-            if (genres.isEmpty()) {
-                throw new CustomLibraryException("No Genres found.", 500);
-            }
-            return genres;
-        } catch (Exception e) {
-            System.out.println("Error retrieving genres: " + e.getMessage());
-            return Collections.emptyList();
-        }
-    }
-
     private static final class GenreRowMapper implements RowMapper<Genre> {
         @Override
         public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -40,6 +28,19 @@ public class GenreDao {
             genre.setGenreId(rs.getInt("genre_id"));
             genre.setGenreName(rs.getString("genre_name"));
             return genre;
+        }
+    }
+
+    public ResponseEntity<?> getAllGenres() {
+        String getAllGenresQuery = "SELECT * FROM genre;";
+        try {
+            List<Genre> genres = jdbcTemplate.query(getAllGenresQuery, new GenreRowMapper());
+            if (genres.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(false, "No Genres found."), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(genres, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse(false, "Error retrieving genres: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

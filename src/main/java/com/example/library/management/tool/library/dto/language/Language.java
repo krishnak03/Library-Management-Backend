@@ -7,7 +7,7 @@ import lombok.Data;
 public class Language {
 
     @JsonProperty("language_id")
-    private int languageId;
+    private Integer languageId;
     @JsonProperty("language_name")
     private String languageName;
 }

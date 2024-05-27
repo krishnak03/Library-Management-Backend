@@ -7,7 +7,7 @@ import lombok.Data;
 public class User {
 
     @JsonProperty("user_id")
-    private int userId;
+    private Integer userId;
     @JsonProperty("user_name")
     private String userName;
     @JsonProperty("user_phone")

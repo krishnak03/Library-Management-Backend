@@ -3,16 +3,15 @@ package com.example.library.management.tool.library.service;
 import com.example.library.management.tool.library.dao.BorrowDao;
 import com.example.library.management.tool.library.dto.borrow.Borrow;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
-import com.example.library.management.tool.library.exceptions.CustomLibraryException;
-import com.example.library.management.tool.library.util.Validator;
+import com.example.library.management.tool.library.util.ValidatorUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+
+import static com.example.library.management.tool.library.util.DateUtil.*;
 
 @Service
 public class BorrowService {
@@ -20,68 +19,67 @@ public class BorrowService {
     @Autowired
     private BorrowDao borrowDao;
 
-    public List<Borrow> getAllBorrows() {
+    public ResponseEntity<?> getAllBorrows() {
         return borrowDao.getAllBorrows();
     }
 
-    public ApiResponse addBorrow(Borrow borrow){
-        if (borrow.getUserId() == 0 || borrow.getBookId() == 0 ||
-                Validator.isEmptyOrNull(borrow.getIssueDate())) {
-            return new ApiResponse(false, "UserId, BookId and Issue Date shouldn't be empty or null.");
+    public ApiResponse addBorrow(Borrow borrow) {
+        if (borrow.getBookId() == null ||
+                borrow.getUserId() == null ||
+                ValidatorUtil.isEmptyOrNull(borrow.getIssueDate())) {
+            return new ApiResponse(false, "Book Id, User Id and Issue date should not be null or empty.");
         }
+
+        if (!isValidDate(borrow.getIssueDate())) {
+            return new ApiResponse(false, "Issue date should not be in valid format (YYYY-MM-DD).");
+        }
+
+        Date issueDate = convertStringToDate(borrow.getIssueDate());
+        Date currentDate = new Date();
+
+        if (!issueDate.before(currentDate)) {
+            return new ApiResponse(false, "Issue date should not be in the past.");
+        }
+
+        if (issueDate.after(addDays(currentDate, 2))) {
+            return new ApiResponse(false, "Issue date should not be more than 2 days in the future.");
+        }
+
+        boolean borrowAllowed = borrowDao.verifyUserAndBookId(borrow);
+        if (!borrowAllowed) {
+            return new ApiResponse(false, "Invalid User or Book Id.");
+        }
+
         return borrowDao.addBorrow(borrow);
     }
 
     public ApiResponse updateBorrow(Borrow borrow) {
-        if (borrow.getUserId() == 0 || borrow.getBookId() == 0 ||
-                Validator.isEmptyOrNull(borrow.getIssueDate())) {
-            return new ApiResponse(false, "UserId, BookId and Issue Date shouldn't be empty or null.");
+        if (borrow.getBorrowId() == null ||
+                borrow.getUserId() == null ||
+                borrow.getBookId() == null ||
+                ValidatorUtil.isEmptyOrNull(borrow.getReturnDate())) {
+            return new ApiResponse(false,
+                    "Borrow Id, User Id, Book Id, Issue Date and Return Date shouldn't be empty or null.");
         }
-        int fine = calculateFine(borrow);
-        if(fine > 0){
-            //to do - pending
-            System.out.println(fine);
-        }
-        return borrowDao.updateBorrow(borrow);
-    }
 
-    // Method to convert string date in yyyy-mm-dd format to Date object
-    public static Date convertStringToDate(String dateString) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = null;
-        try {
-            date = formatter.parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return date;
-    }
+        Date issueDate = new Date();
+        if (ValidatorUtil.isEmptyOrNull(borrow.getIssueDate())) {
+            issueDate = borrowDao.getIssueDate(borrow);
+            borrow.setIssueDate(new SimpleDateFormat("yyyy-MM-dd").format(issueDate));
 
-    // Method to calculate difference between two dates in days
-    public static long calculateDateDifference(Borrow borrow) {
-        Date issueDate = convertStringToDate(borrow.getIssueDate());
+            if (!isValidDate(borrow.getReturnDate()) || !isValidDate(borrow.getIssueDate())) {
+                return new ApiResponse(false,
+                        "Issue date and return date should not be in valid format (YYYY-MM-DD).");
+            }
+        }
+
         Date returnDate = convertStringToDate(borrow.getReturnDate());
 
-        // Check if both dates are successfully parsed
-        if (issueDate != null && returnDate != null) {
-            long diffInMillies = Math.abs(returnDate.getTime() - issueDate.getTime());
-            long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-            return diff;
-        } else {
-            System.out.println("Unable to Calculate number of days book was borrowed");
-            return -1;
+        if (issueDate.after(returnDate)) {
+            return new ApiResponse(false, "Issue date should not be after return date.");
         }
+
+        borrow.setFine(calculateFine(borrow));
+        return borrowDao.updateBorrow(borrow);
     }
-
-    public int calculateFine(Borrow borrow) {
-        long daysBorrowed  = calculateDateDifference(borrow);
-
-        if (daysBorrowed <= 7) {
-            return 0;
-        } else {
-            long overdueDays = daysBorrowed - 7;
-            return (int) (5 * Math.ceil(overdueDays / 7.0));
-        }
-    }
-
 }
