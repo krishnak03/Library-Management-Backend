@@ -31,7 +31,7 @@ public class BorrowService {
         }
 
         if (!isValidDate(borrow.getIssueDate())) {
-            return new ApiResponse(false, "Issue date should not be in valid format (YYYY-MM-DD).");
+            return new ApiResponse(false, "Issue date should be in valid format (YYYY-MM-DD).");
         }
 
         Date issueDate = convertStringToDate(borrow.getIssueDate());
@@ -54,9 +54,9 @@ public class BorrowService {
     }
 
     public ApiResponse updateBorrow(Borrow borrow) {
-        if (borrow.getBorrowId() == null ||
-                borrow.getUserId() == null ||
-                borrow.getBookId() == null ||
+        if (borrow.getBorrowId() == null &&
+                borrow.getUserId() == null &&
+                borrow.getBookId() == null &&
                 ValidatorUtil.isEmptyOrNull(borrow.getReturnDate())) {
             return new ApiResponse(false,
                     "Borrow Id, User Id, Book Id, Issue Date and Return Date shouldn't be empty or null.");
@@ -69,7 +69,7 @@ public class BorrowService {
 
             if (!isValidDate(borrow.getReturnDate()) || !isValidDate(borrow.getIssueDate())) {
                 return new ApiResponse(false,
-                        "Issue date and return date should not be in valid format (YYYY-MM-DD).");
+                        "Issue date and return date should be in valid format (YYYY-MM-DD).");
             }
         }
 

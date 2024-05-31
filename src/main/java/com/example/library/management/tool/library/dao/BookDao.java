@@ -62,7 +62,18 @@ public class BookDao {
                     new Object[]{genreName},
                     Integer.class
             );
-            return count != null && count > 0;
+
+            if (count == null || count == 0) {
+                // Genre does not exist, insert it into the table
+                int rowsAffected = jdbcTemplate.update(
+                        "INSERT INTO genre (genre_name) VALUES (?)",
+                        genreName
+                );
+                return rowsAffected > 0;
+            } else {
+                // Genre exists
+                return true;
+            }
         } catch (Exception e) {
             return false;
         }
@@ -75,7 +86,18 @@ public class BookDao {
                     new Object[]{languageName},
                     Integer.class
             );
-            return count != null && count > 0;
+
+            if (count == null || count == 0) {
+                // Language does not exist, insert it into the table
+                int rowsAffected = jdbcTemplate.update(
+                        "INSERT INTO language (language_name) VALUES (?)",
+                        languageName
+                );
+                return rowsAffected > 0;
+            } else {
+                // Language exists
+                return true;
+            }
         } catch (Exception e) {
             return false;
         }
