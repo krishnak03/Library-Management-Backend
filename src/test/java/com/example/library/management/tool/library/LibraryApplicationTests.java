@@ -1,6 +1,7 @@
 package com.example.library.management.tool.library;
 
 import com.example.library.management.tool.library.util.EncryptionUtil;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,17 +23,19 @@ class LibraryApplicationTests {
 		conn = getConnection();
 	}
 
+	@AfterEach
+	void tearDown() throws SQLException {
+		if (conn != null && !conn.isClosed()) {
+			conn.close();
+		}
+	}
+
 	public static Connection getConnection() throws SQLException {
 		String url = System.getProperty("DB_URL");
 		String username = System.getProperty("DB_USERNAME");
 		String password = System.getProperty("DB_PASSWORD");
 
-
 		return DriverManager.getConnection(url, username, password);
-	}
-
-	@Test
-	void contextLoads() {
 	}
 
 	@Test
