@@ -46,7 +46,7 @@ public class EncryptionUtil {
             return new String(original, StandardCharsets.UTF_8);
         } catch (Exception ex) {
             ex.printStackTrace();
+            return "Error while decrypting value.";
         }
-        return null;
     }
 }
