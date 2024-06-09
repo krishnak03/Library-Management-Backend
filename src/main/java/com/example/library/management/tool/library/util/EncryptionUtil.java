@@ -49,18 +49,4 @@ public class EncryptionUtil {
         }
         return null;
     }
-
-    public static void main(String[] args) {
-        String str = "Kartik";
-        String encryptedStr = encrypt(str);
-        String strPassword = "12345";
-        String encryptedStrPassword = encrypt(strPassword);
-        String decryptedStr = decrypt(encryptedStr);
-        String decryptedStrPassword = decrypt(strPassword);
-        System.out.println("Original: " + str);
-        System.out.println("Encrypted: " + encryptedStr);
-        System.out.println("Encrypted Password: " + encryptedStrPassword);
-        System.out.println("Decrypted: " + decryptedStr);
-        System.out.println("Decrypted: " + decryptedStrPassword);
-    }
 }
