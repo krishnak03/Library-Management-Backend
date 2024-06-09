@@ -4,7 +4,7 @@ import com.example.library.management.tool.library.dto.admin.Admin;
 import com.example.library.management.tool.library.dto.admin.LoginAdmin;
 import com.example.library.management.tool.library.dto.standardresponse.ApiResponse;
 import com.example.library.management.tool.library.service.AdminService;
-import com.example.library.management.tool.library.util.DecryptUtil;
+import com.example.library.management.tool.library.util.EncryptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.util.Base64;
-import java.util.List;
 
 @RestController
 @RequestMapping(path = "/admins")
@@ -43,8 +42,8 @@ public class AdminController {
 
     @PostMapping(path = "/login")
     public ApiResponse loginAdmin(@RequestBody LoginAdmin loginAdmin) {
-        String decryptedUsername = DecryptUtil.decrypt(loginAdmin.getAdminUsername());
-        String decryptedPassword = DecryptUtil.decrypt(loginAdmin.getAdminPassword());
+        String decryptedUsername = EncryptionUtil.decrypt(loginAdmin.getAdminUsername());
+        String decryptedPassword = EncryptionUtil.decrypt(loginAdmin.getAdminPassword());
         return adminService.loginAdmin(decryptedUsername, decryptedPassword);
     }
 
