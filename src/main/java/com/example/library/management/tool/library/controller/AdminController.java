@@ -52,7 +52,7 @@ public class AdminController {
         try {
             // Create a KeyGenerator instance for AES
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-            keyGen.init(256); // Specify the key size (128, 192, or 256 bits)
+            keyGen.init(256);
             SecretKey secretKey = keyGen.generateKey();
             return Base64.getEncoder().encodeToString(secretKey.getEncoded());
         } catch (Exception e) {
