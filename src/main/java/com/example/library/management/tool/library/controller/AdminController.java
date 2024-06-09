@@ -42,8 +42,17 @@ public class AdminController {
 
     @PostMapping(path = "/login")
     public ApiResponse loginAdmin(@RequestBody LoginAdmin loginAdmin) {
+        
         String decryptedUsername = EncryptionUtil.decrypt(loginAdmin.getAdminUsername());
+        if(EncryptionUtil.decrypt(loginAdmin.getAdminUsername()).equalsIgnoreCase("Error while decrypting value.") ||
+                (loginAdmin.getAdminUsername() != null && decryptedUsername == null)) {
+            return new ApiResponse(false, "Error while decrypting username");
+        }
         String decryptedPassword = EncryptionUtil.decrypt(loginAdmin.getAdminPassword());
+        if(EncryptionUtil.decrypt(loginAdmin.getAdminUsername()).equalsIgnoreCase("Error while decrypting value.") ||
+                (loginAdmin.getAdminPassword() != null && decryptedPassword == null)) {
+            return new ApiResponse(false, "Error while decrypting password");
+        }
         return adminService.loginAdmin(decryptedUsername, decryptedPassword);
     }
 
