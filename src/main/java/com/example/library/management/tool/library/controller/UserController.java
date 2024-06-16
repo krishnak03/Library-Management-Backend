@@ -29,8 +29,8 @@ public class UserController {
         return userService.updateUser(user);
     }
 
-    @DeleteMapping
-    public ApiResponse deleteUser(@RequestBody User user) {
-        return userService.deleteUser(user.getUserId());
+    @DeleteMapping("/{userId}")
+    public ApiResponse deleteUser(@PathVariable Integer userId) {
+        return userService.deleteUser(userId);
     }
 }
