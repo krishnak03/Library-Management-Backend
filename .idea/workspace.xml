@@ -6,8 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="85a76e54-6e06-478f-9586-21b6c8d67357" name="Changes" comment="Adding Cors Configuration in main application">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/controller/BookController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/controller/BookController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/controller/LanguageController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/controller/LanguageController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/dto/book/Book.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/dto/book/Book.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -217,11 +218,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/dao/BookDao.java</url>
           <line>59</line>
           <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/example/library/management/tool/library/controller/UserController.java</url>
-          <line>33</line>
-          <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

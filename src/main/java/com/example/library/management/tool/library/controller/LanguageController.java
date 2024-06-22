@@ -36,5 +36,4 @@ public class LanguageController {
     public ApiResponse deleteLanguage(@RequestBody Language language) {
         return languageService.deleteLanguage(language.getLanguageId());
     }
-
 }

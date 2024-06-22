@@ -35,9 +35,9 @@ public class BookController {
         return bookService.updateBook(book);
     }
 
-    @DeleteMapping
-    public ApiResponse deleteBook(@RequestBody Book book) {
-        return bookService.deleteBook(book.getBookId());
+    @DeleteMapping("/{bookId}")
+    public ApiResponse deleteUser(@PathVariable Integer bookId) {
+        return bookService.deleteBook(bookId);
     }
 
     @GetMapping(path = "/search")
